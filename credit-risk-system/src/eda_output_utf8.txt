@@ -1,0 +1,200 @@
+﻿======================================================================
+LOADING DATA & REPRODUCING PREVIOUS CLEANING
+======================================================================
+Loaded: (50000, 151)
+After previous cleaning: (44252, 76)
+Default rate: 20.96%
+
+======================================================================
+STEP 1: FEATURE TYPE ANALYSIS
+======================================================================
+Numerical columns: 60
+Categorical columns: 16
+
+--- Categorical columns and their unique value counts ---
+  term: 2 unique values
+    Values: [' 36 months', ' 60 months']
+  grade: 7 unique values
+    Values: ['C', 'B', 'F', 'A', 'E', 'D', 'G']
+  sub_grade: 35 unique values
+  emp_title: 19193 unique values
+  emp_length: 11 unique values
+    Values: ['10+ years', '3 years', '4 years', '6 years', '7 years', '8 years', '2 years', '5 years', '9 years', '< 1 year', '1 year', nan]
+  home_ownership: 4 unique values
+    Values: ['MORTGAGE', 'RENT', 'OWN', 'ANY']
+  verification_status: 3 unique values
+    Values: ['Not Verified', 'Source Verified', 'Verified']
+  issue_d: 2 unique values
+    Values: ['Dec-2015', 'Nov-2015']
+  loan_status: 4 unique values
+    Values: ['Fully Paid', 'Charged Off', 'Late (31-120 days)', 'Default']
+  purpose: 12 unique values
+    Values: ['debt_consolidation', 'small_business', 'home_improvement', 'major_purchase', 'credit_card', 'other', 'house', 'vacation', 'car', 'medical', 'moving', 'renewable_energy']
+  addr_state: 49 unique values
+  earliest_cr_line: 599 unique values
+  initial_list_status: 2 unique values
+    Values: ['w', 'f']
+  hardship_flag: 2 unique values
+    Values: ['N', 'Y']
+  disbursement_method: 1 unique values
+    Values: ['Cash']
+  debt_settlement_flag: 2 unique values
+    Values: ['N', 'Y']
+
+======================================================================
+STEP 2: CLEAN TYPE-CONFUSED COLUMNS
+======================================================================
+term unique values after fix: [36 60]
+
+emp_length missing after mapping: 2764 (6.2%)
+
+earliest_cr_line sample:
+0   2003-08-01
+1   1999-12-01
+2   2000-08-01
+4   1998-06-01
+5   1987-10-01
+Name: earliest_cr_line, dtype: datetime64[ns]
+
+======================================================================
+STEP 3: MISSING VALUE IMPUTATION
+======================================================================
+Columns still with missing values: 12
+
+mths_since_last_delinq    21142
+mths_since_recent_inq      4527
+emp_title                  2769
+emp_length                 2764
+num_tl_120dpd_2m           2423
+mo_sin_old_il_acct         1236
+percent_bc_gt_75            456
+bc_util                     439
+bc_open_to_buy              413
+mths_since_recent_bc        397
+revol_util                  248
+dti                           4
+dtype: int64
+
+mths_since_last_delinq: filled NaN with 304.0 (MNAR ΓÇö never happened)
+
+mths_since_recent_bc: filled NaN with 1048.0 (MNAR ΓÇö never happened)
+
+mths_since_recent_inq: filled NaN with 48.0 (MNAR ΓÇö never happened)
+
+[OK] Total missing values remaining: 0
+Shape: (44252, 76)
+
+======================================================================
+STEP 4: CORRELATION ANALYSIS
+======================================================================
+Top 20 features correlated with default:
+
+last_fico_range_high    -0.697441
+last_fico_range_low     -0.599896
+int_rate                 0.314613
+term                     0.248394
+fico_range_low          -0.139033
+fico_range_high         -0.139030
+acc_open_past_24mths     0.136083
+dti                      0.123639
+num_tl_op_past_12m       0.115360
+inq_last_6mths           0.099439
+mths_since_recent_inq   -0.086259
+bc_open_to_buy          -0.085911
+avg_cur_bal             -0.082550
+funded_amnt              0.080706
+loan_amnt                0.080706
+funded_amnt_inv          0.080459
+tot_hi_cred_lim         -0.079687
+total_bc_limit          -0.075747
+num_actv_rev_tl          0.073810
+num_rev_tl_bal_gt_0      0.073727
+
+
+--- Highly Correlated Feature Pairs (|r| > 0.85) ---
+
+Found 12 pairs:
+
+        feature_1                  feature_2  correlation
+        loan_amnt                funded_amnt        1.000
+        loan_amnt            funded_amnt_inv        1.000
+      funded_amnt            funded_amnt_inv        1.000
+   fico_range_low            fico_range_high        1.000
+         open_acc                   num_sats        0.999
+      tot_cur_bal            tot_hi_cred_lim        0.985
+  num_actv_rev_tl        num_rev_tl_bal_gt_0        0.970
+        loan_amnt                installment        0.956
+      funded_amnt                installment        0.956
+  funded_amnt_inv                installment        0.956
+total_bal_ex_mort total_il_high_credit_limit        0.886
+   acc_now_delinq               num_tl_30dpd        0.851
+
+[PLOT] Saved: correlation_heatmap.png
+
+======================================================================
+STEP 5: DROP REDUNDANT FEATURES
+======================================================================
+Dropped 6 redundant features: ['funded_amnt', 'funded_amnt_inv', 'fico_range_high', 'last_fico_range_high', 'num_sats', 'installment']
+Remaining columns: 70
+
+======================================================================
+STEP 6: VISUALIZATIONS
+======================================================================
+[PLOT] Saved: default_rates_categorical.png
+[PLOT] Saved: distributions_by_target.png
+
+======================================================================
+STEP 7: FEATURE ENGINEERING
+======================================================================
+New features created:
+  loan_to_income: mean=0.6619, min=0.0046, max=20000.0000
+  fico_avg: mean=696.2956, min=662.0000, max=847.0000
+  credit_history_months: mean=204.0152, min=38.0000, max=802.0000
+  ever_delinquent: mean=0.4992, min=0.0000, max=1.0000
+
+Correlation with target (default):
+  loan_to_income                : -0.0023  (weak)
+  fico_avg                      : -0.1390  (moderate)
+  credit_history_months         : -0.0471  (weak)
+  ever_delinquent               : +0.0185  (weak)
+
+======================================================================
+STEP 8: FINAL COLUMN CLEANUP
+======================================================================
+Dropped 5 final columns: ['loan_status', 'issue_d', 'earliest_cr_line', 'emp_title', 'hardship_flag']
+Final shape: (44252, 69)
+
+Column types:
+  Numerical: 60
+  Categorical: 9
+
+Remaining categorical columns:
+  grade: 7 unique values
+  sub_grade: 35 unique values
+  home_ownership: 4 unique values
+  verification_status: 3 unique values
+  purpose: 12 unique values
+  addr_state: 49 unique values
+  initial_list_status: 2 unique values
+  disbursement_method: 1 unique values
+  debt_settlement_flag: 2 unique values
+
+======================================================================
+STEP 9: SAVE CLEANED DATA
+======================================================================
+[OK] Saved cleaned data to: C:\Users\Zakir Elaskar\credit-risk-system\credit-risk-system\data\processed
+   CSV size:     16.5 MB
+   Parquet size: 3.7 MB
+   Shape: (44252, 69)
+   Target distribution:
+target
+0    34978
+1     9274
+   Default rate: 20.96%
+
+======================================================================
+ALL STEPS COMPLETE ΓÇö Data is ready for modeling (notebook 02)
+======================================================================
+
+Final columns (69):
+['loan_amnt', 'term', 'int_rate', 'grade', 'sub_grade', 'emp_length', 'home_ownership', 'annual_inc', 'verification_status', 'purpose', 'addr_state', 'dti', 'delinq_2yrs', 'fico_range_low', 'inq_last_6mths', 'mths_since_last_delinq', 'open_acc', 'pub_rec', 'revol_bal', 'revol_util', 'total_acc', 'initial_list_status', 'last_fico_range_low', 'collections_12_mths_ex_med', 'acc_now_delinq', 'tot_coll_amt', 'tot_cur_bal', 'total_rev_hi_lim', 'acc_open_past_24mths', 'avg_cur_bal', 'bc_open_to_buy', 'bc_util', 'chargeoff_within_12_mths', 'delinq_amnt', 'mo_sin_old_il_acct', 'mo_sin_old_rev_tl_op', 'mo_sin_rcnt_rev_tl_op', 'mo_sin_rcnt_tl', 'mort_acc', 'mths_since_recent_bc', 'mths_since_recent_inq', 'num_accts_ever_120_pd', 'num_actv_bc_tl', 'num_actv_rev_tl', 'num_bc_sats', 'num_bc_tl', 'num_il_tl', 'num_op_rev_tl', 'num_rev_accts', 'num_rev_tl_bal_gt_0', 'num_tl_120dpd_2m', 'num_tl_30dpd', 'num_tl_90g_dpd_24m', 'num_tl_op_past_12m', 'pct_tl_nvr_dlq', 'percent_bc_gt_75', 'pub_rec_bankruptcies', 'tax_liens', 'tot_hi_cred_lim', 'total_bal_ex_mort', 'total_bc_limit', 'total_il_high_credit_limit', 'disbursement_method', 'debt_settlement_flag', 'target', 'loan_to_income', 'fico_avg', 'credit_history_months', 'ever_delinquent']
