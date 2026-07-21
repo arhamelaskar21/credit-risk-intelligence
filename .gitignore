@@ -1,5 +1,7 @@
+# Data files - never commit
 data/
 **/data/
 *.csv
 *.csv.gz
 *.parquet
+*.gz
