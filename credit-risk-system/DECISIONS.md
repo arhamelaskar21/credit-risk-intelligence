@@ -52,3 +52,24 @@ int_rate (0.31) — strong legitimate predictor. LendingClub charges higher rate
 fico_range_low, fico_mid, fico_range_high — perfectly correlated at 1.00 with each other. Keep only fico_range_low, drop the other two.
 loan_amnt and funded_amnt — perfectly correlated at 1.00. Same signal twice. Drop funded_amnt, keep loan_amnt.
 acc_open_past_24mths and num_tl_op_past_12m — correlated at 0.77. Both measure recent credit activity. Will revisit during feature engineering.
+FEATURE ENGINEERING AND ENCODING DECISIONS
+
+Grade → Ordinal Encoding (A=1 to G=7)
+Ordinal encoding preserves the natural risk order assigned by LendingClub. One-hot encoding would treat all grades as equally distant categories, throwing away the credit risk ordering. A positive model coefficient now directly means higher grade = higher risk.
+
+Term → Binary Encoding (36 months=0, 60 months=1)
+Binary because there are only two values. 60 months encoded as 1 because longer loan term = higher default risk. This convention keeps the coefficient sign interpretable — positive coefficient means longer term = more risk.
+
+Verification Status → One-Hot Encoding (drop_first=True)
+No natural order exists between Verified, Source Verified, and Not Verified. One-hot encoding avoids imposing a fake ordering. drop_first=True drops Not Verified as the baseline category to avoid multicollinearity — if both dummies are 0, the model infers Not Verified automatically.
+
+Earliest Credit Line → Credit History Months
+Raw date is meaningless to the model. Converted to number of months between earliest credit line and December 2018 (end of dataset). Using a fixed reference date avoids data leakage — using today's date would add 8+ years of history that didn't exist when the loan was issued. Longer credit history = lower uncertainty = lower default risk.
+
+addr_state → Dropped
+50+ unique values would require 49 dummy columns, adding noise to the baseline model. Some states have too few loans for reliable pattern learning (data sparsity). Will revisit in later iterations using regional grouping.
+
+Bool columns → Converted to int64
+Logistic regression requires numeric input. All 18 boolean dummy columns cast to int64.
+
+Final encoded dataset: 44,251 rows, 79 columns, all numeric (float64 + int64). Saved to data/processed/engineered_loans.parquet.
