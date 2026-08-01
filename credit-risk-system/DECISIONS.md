@@ -73,3 +73,25 @@ Bool columns → Converted to int64
 Logistic regression requires numeric input. All 18 boolean dummy columns cast to int64.
 
 Final encoded dataset: 44,251 rows, 79 columns, all numeric (float64 + int64). Saved to data/processed/engineered_loans.parquet.
+
+MODELING — LOGISTIC REGRESSION BASELINE
+
+Train/test split: 80/20, stratified on target to preserve 20.96% default rate in both sets.
+Feature scaling: StandardScaler fit on X_train only — prevents test set statistics leaking into scaling.
+
+Results:
+- LR no class balancing: Accuracy 0.80, Class 1 Recall 0.20, AUC 0.74
+- LR class_weight=balanced: Accuracy 0.69, Class 1 Recall 0.66, Class 1 F1 0.47, AUC 0.74
+- LR balanced threshold=0.30: Class 1 Recall 0.91, Class 1 Precision 0.27
+
+Business decision: Use balanced model at 0.50 threshold as baseline. Recall 0.66 is acceptable
+for a baseline — catching 66% of defaulters vs 20% justifies the drop in accuracy.
+AUC of 0.74 is the benchmark all future models must beat.
+
+Top predictors by coefficient magnitude:
+1. int_rate (0.45) — absorbs grade signal due to correlation
+2. term (0.36) — 60-month loans riskier
+3. dti (0.17) — debt burden
+4. mo_sin_old_rev_tl_op (-0.20) — long credit history reduces risk
+
+Next: XGBoost — target AUC > 0.80, Class 1 Recall > 0.70
