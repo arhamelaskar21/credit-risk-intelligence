@@ -95,3 +95,28 @@ Top predictors by coefficient magnitude:
 4. mo_sin_old_rev_tl_op (-0.20) — long credit history reduces risk
 
 Next: XGBoost — target AUC > 0.80, Class 1 Recall > 0.70
+
+MODELING — XGBOOST
+
+XGBoost trained on unscaled features (tree-based models don't need scaling).
+Class imbalance handled via scale_pos_weight=3.77 (ratio of non-defaulters to defaulters: 34978/9274).
+
+Hyperparameters tuned:
+- n_estimators=300 (more trees = better learning)
+- max_depth=4 (shallower trees reduce overfitting to majority class)
+- learning_rate=0.1 (smaller steps = more careful learning)
+- subsample=0.8 (80% of data per tree, reduces overfitting)
+- colsample_bytree=0.8 (80% of features per tree, reduces overfitting)
+- scale_pos_weight=4.5 (final tuning to push recall higher)
+
+Final XGBoost results:
+- AUC: 0.74 (matches logistic regression baseline)
+- Class 1 Recall: 0.69 (beats LR baseline of 0.66)
+- Class 1 F1: 0.46
+- Class 1 Precision: 0.34
+
+Decision: XGBoost selected as final model — higher recall (0.69 vs 0.66) catches more
+defaulters. AUC ceiling at 0.74 with manual tuning; further improvement requires SHAP
+analysis and feature selection.
+
+Next: SHAP explainability for regulatory compliance and model interpretability.
