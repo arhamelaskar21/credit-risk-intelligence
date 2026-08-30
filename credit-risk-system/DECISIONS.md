@@ -120,3 +120,41 @@ defaulters. AUC ceiling at 0.74 with manual tuning; further improvement requires
 analysis and feature selection.
 
 Next: SHAP explainability for regulatory compliance and model interpretability.
+
+## SHAP Explainability
+
+**Decision:** Use SHAP TreeExplainer to explain XGBoost predictions
+**Business reason:** Banks are legally required to provide reasons for loan rejection (Adverse Action Notices under ECOA). A prediction score alone cannot satisfy this requirement — SHAP provides feature-level explanations for every decision
+**Technical decisions:**
+- Used `shap.TreeExplainer` — optimized specifically for tree-based models like XGBoost
+- Summary plot saved to `notebooks/shap_summary.png` — shows global feature importance across all loans
+- Force plot generated for individual loan explanation — shows which features pushed toward or away from default for a single applicant
+- Top predictors: `int_rate`, `term`, `dti`, `loan_to_income`
+- `grade` feature absorbed by correlated features — not a top SHAP predictor despite business intuition
+
+**Key insight:** `annual_inc` pushes toward default in some cases — high income borrowers qualify for larger loans which carry higher risk. `loan_to_income` is a stronger predictor than raw `annual_inc`.
+
+
+## FastAPI Deployment
+
+**Decision:** Serve XGBoost model via FastAPI REST endpoint
+**Business reason:** Model needs to be accessible as a service — any system (bank portal, mobile app, Streamlit dashboard) can send loan data and receive a real-time prediction via HTTP POST
+**Technical decisions:**
+- Used `joblib` to save model and feature columns separately — ensures they stay in sync on retraining
+- Used Pydantic `create_model()` to dynamically generate request validation from feature columns list — avoids hardcoding 75 fields manually
+- Default value of `0.0` for all fields — prevents crashes on missing data
+- `predict_proba()[0][1]` returns class 1 (default) probability specifically
+- Threshold: >= 0.5 = High Risk, < 0.5 = Low Risk
+
+**Endpoint:** POST /predict → returns default_probability + risk_label## FastAPI Deployment
+
+**Decision:** Serve XGBoost model via FastAPI REST endpoint
+**Business reason:** Model needs to be accessible as a service — any system (bank portal, mobile app, Streamlit dashboard) can send loan data and receive a real-time prediction via HTTP POST
+**Technical decisions:**
+- Used `joblib` to save model and feature columns separately — ensures they stay in sync on retraining
+- Used Pydantic `create_model()` to dynamically generate request validation from feature columns list — avoids hardcoding 75 fields manually
+- Default value of `0.0` for all fields — prevents crashes on missing data
+- `predict_proba()[0][1]` returns class 1 (default) probability specifically
+- Threshold: >= 0.5 = High Risk, < 0.5 = Low Risk
+
+**Endpoint:** POST /predict → returns default_probability + risk_label
